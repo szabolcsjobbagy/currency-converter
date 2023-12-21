@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`userService should return a user by the given ID 1`] = `
+User {
+  "address": {
+    "city": "New York",
+    "street": "123 Main St",
+    "zipCode": "12345",
+  },
+  "dateOfBirth": 1990-01-15T00:00:00.000Z,
+  "email": "john@example.com",
+  "firstName": "John",
+  "id": 1,
+  "isActive": true,
+  "lastName": "Doe",
+  "phoneNumber": "123-456-7890",
+  "roles": [
+    "user",
+    "admin",
+  ],
+  "userName": "john_doe",
+}
+`;
