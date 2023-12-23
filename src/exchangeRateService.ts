@@ -53,21 +53,17 @@ export class IExchangeRateService {
 		// For 2023-12-04, for EUR the exchange rate is invalid, for USD it is missing
 		// to help testing the error handling
 
-		try {
-			const conversionDataItem = conversionData.find(
-				(item) =>
-					item.fromCurrency === fromCurrency &&
-					item.toCurrency === toCurrency &&
-					item.date === dateString
-			)
+		const conversionDataItem = conversionData.find(
+			(item) =>
+				item.fromCurrency === fromCurrency &&
+				item.toCurrency === toCurrency &&
+				item.date === dateString
+		)
 
-			if (conversionDataItem) {
-				const result = conversionDataItem.rate
-				return result
-			} else {
-				return ""
-			}
-		} catch (error) {
+		if (conversionDataItem) {
+			const result = conversionDataItem.rate
+			return result
+		} else {
 			const conversionDataItem = conversionData.find(
 				(item) =>
 					item.fromCurrency === toCurrency &&
@@ -75,8 +71,8 @@ export class IExchangeRateService {
 					item.date === dateString
 			)
 
-			if (conversionDataItem) {
-				const result = conversionDataItem.rate
+			if (conversionDataItem && typeof conversionDataItem.rate === "number") {
+				const result = 1 / conversionDataItem.rate
 				return result
 			} else {
 				return ""

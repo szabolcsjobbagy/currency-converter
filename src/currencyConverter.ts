@@ -1,8 +1,8 @@
-import { IExchangeRateService } from "./exchangeRateService"
-import { ValidationError } from "./errors/validationError"
-import { NetworkError } from "./errors/networkError"
-import { NotFoundError } from "./errors/notFoundError"
-import { validCurrencies } from "./configData"
+import { IExchangeRateService } from "./exchangeRateService.js"
+import { ValidationError } from "./errors/validationError.js"
+import { NetworkError } from "./errors/networkError.js"
+import { NotFoundError } from "./errors/notFoundError.js"
+import { validCurrencies } from "./configData.js"
 
 export class CurrencyConverter {
 	private readonly FIXED_AMOUNT = 100
@@ -19,6 +19,9 @@ export class CurrencyConverter {
 		this.validateCurrency(toCurrency, "TO CURRENCY")
 		this.validateCurrencySame(fromCurrency, toCurrency)
 		this.validateDate(currentDate, "DATE")
+
+		fromCurrency = fromCurrency.toUpperCase()
+		toCurrency = toCurrency.toUpperCase()
 
 		const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency, currentDate)
 		this.validateExchangeRate(exchangeRate)
@@ -46,6 +49,9 @@ export class CurrencyConverter {
 		this.validateDate(startDate, "START DATE")
 		this.validateDate(endDate, "END DATE")
 		this.validateDateRange(startDate, endDate)
+
+		fromCurrency = fromCurrency.toUpperCase()
+		toCurrency = toCurrency.toUpperCase()
 
 		while (currentDate <= endDate) {
 			const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency, currentDate)
