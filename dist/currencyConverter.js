@@ -1,41 +1,48 @@
+import { ValidationError } from "./errors/validationError";
+import { NetworkError } from "./errors/networkError";
+import { NotFoundError } from "./errors/notFoundError";
+import { validCurrencies } from "./configData";
 export class CurrencyConverter {
     constructor(exchangeRateService) {
         this.exchangeRateService = exchangeRateService;
         this.FIXED_AMOUNT = 100;
     }
-    Convert(amount, fromCurrency, toCurrency) {
+    Convert(amount, fromCurrency, toCurrency, currentDate) {
         this.validateAmount(amount);
-        const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency);
+        this.validateCurrency(fromCurrency, "FROM CURRENCY");
+        this.validateCurrency(toCurrency, "TO CURRENCY");
+        this.validateCurrencySame(fromCurrency, toCurrency);
+        this.validateDate(currentDate, "DATE");
+        const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency, currentDate);
         this.validateExchangeRate(exchangeRate);
-        return amount * exchangeRate;
+        if (typeof exchangeRate == "number") {
+            const convertedAmount = amount * exchangeRate;
+            return Number(convertedAmount.toFixed(2));
+        }
+        else {
+            throw new ValidationError("Invalid EXCHANGE RATE returned.");
+        }
     }
     GenerateConversionReport(fromCurrency, toCurrency, startDate, endDate) {
         const conversions = [];
         const currentDate = new Date(startDate);
+        this.validateCurrency(fromCurrency, "FROM CURRENCY");
+        this.validateCurrency(toCurrency, "TO CURRENCY");
+        this.validateCurrencySame(fromCurrency, toCurrency);
+        this.validateDate(startDate, "START DATE");
+        this.validateDate(endDate, "END DATE");
+        this.validateDateRange(startDate, endDate);
         while (currentDate <= endDate) {
-            const exchangeRate = this.exchangeRateService.getExchangeRate(fromCurrency, toCurrency);
+            const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency, currentDate);
             this.validateExchangeRate(exchangeRate);
-            this.calculateConversion(exchangeRate, conversions, currentDate);
+            if (typeof exchangeRate == "number") {
+                this.calculateConversion(exchangeRate, conversions, currentDate);
+            }
         }
         return `Conversion Report:\n${conversions.join("\n")}`;
     }
-    ConvertAndDisplay(amount, fromCurrency, toCurrency) {
-        try {
-            const convertedAmount = this.Convert(amount, fromCurrency, toCurrency);
-            const resultDiv = document.getElementById("result");
-            if (resultDiv) {
-                resultDiv.innerText = `Converted Amount: ${convertedAmount}`;
-            }
-            else {
-                throw new Error("Result div not found.");
-            }
-        }
-        catch (error) {
-            console.error(error);
-        }
-    }
-    getExchangeRate(fromCurrency, toCurrency) {
-        return this.exchangeRateService.getExchangeRate(fromCurrency, toCurrency);
+    getExchangeRate(fromCurrency, toCurrency, currentDate) {
+        return this.exchangeRateService.getExchangeRate(fromCurrency, toCurrency, currentDate);
     }
     calculateConversion(exchangeRate, conversions, currentDate) {
         // Assume a fixed amount for simplicity
@@ -44,16 +51,42 @@ export class CurrencyConverter {
         currentDate.setDate(currentDate.getDate() + 1);
     }
     validateExchangeRate(exchangeRate) {
+        if (exchangeRate == "") {
+            const error = new NotFoundError("EXCHANGE RATE not found.");
+            throw error;
+        }
         if (!exchangeRate) {
-            throw new Error("Unable to fetch exchange rate.");
+            const error = new NetworkError("Unable to fetch EXCHANGE RATE.");
+            throw error;
         }
         if (isNaN(exchangeRate)) {
-            throw new Error("Invalid exchange rate.");
+            const error = new ValidationError("Invalid EXCHANGE RATE returned.");
+            throw error;
         }
     }
     validateAmount(amount) {
         if (isNaN(amount)) {
-            throw new Error("Invalid amount input.");
+            throw new ValidationError("Invalid AMOUNT input.");
+        }
+    }
+    validateCurrency(currency, currencyName) {
+        if (!validCurrencies.includes(currency.toUpperCase())) {
+            throw new ValidationError(`Invalid ${currencyName} input.`);
+        }
+    }
+    validateCurrencySame(fromCurrency, toCurrency) {
+        if (fromCurrency.toUpperCase() === toCurrency.toUpperCase()) {
+            throw new ValidationError("FROM and TO CURRENCIES must be different.");
+        }
+    }
+    validateDate(date, dateName) {
+        if (!(date instanceof Date) || isNaN(date.getTime())) {
+            throw new ValidationError(`Invalid ${dateName} input.`);
+        }
+    }
+    validateDateRange(startDate, endDate) {
+        if (endDate < startDate) {
+            throw new ValidationError("END DATE must be greater than or equal to START DATE.");
         }
     }
 }

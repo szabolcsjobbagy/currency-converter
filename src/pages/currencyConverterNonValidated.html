@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Currency Converter | Non-Validated</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
+    <link rel="stylesheet" href="/src/static/css/main.css">
+
+</head>
+<body>
+
+    <div class="d-flex flex-row text-center align-items-center justify-content-evenly my-2 mx-auto">
+
+        <a class="btn btn-primary btn-lg btn-block mx-2" href="/src/pages/currencyConverterValidated.html">Go to
+            Validated Converter</a>
+
+        <a class="btn btn-primary btn-lg btn-block mx-2" href="/src/pages/conversionReportNonValidated.html">Go to
+            Conversion Report</a>
+
+    </div>
+
+    <h2>Currency Converter</h2>
+    <h5>Non-validated input fields</h5>
+
+
+    <div class="d-flex flex-column text-center align-items-center my-3 mx-auto">
+
+        <form id="currencyConverterForm" class="d-flex flex-column w-50 h-50
+            text-center align-items-center justify-content-evenly">
+            <label for="amount">Amount:</label>
+            <input type="text" id="amount" name="amount" value="">
+            
+            <label for="fromCurrency">From Currency:</label>
+            <input type="text" id="fromCurrency" name="fromCurrency" value="">
+            
+            <label for="toCurrency">To Currency:</label>
+            <input type="text" id="toCurrency" name="toCurrency" value="">
+            
+            <label for="toCurrency">Date:</label>
+            <input type="text" id="currentDate" name="currentDate" value="">
+            
+            <button class="btn btn-primary btn-lg btn-block my-3 w-60 h-50" type="submit">Convert</button>
+        </form>
+    </div>
+    
+    <div id="result"></div>
+
+    <script type="module" src="/dist/currencyConverterMain.js"></script>
+</body>
+</html>

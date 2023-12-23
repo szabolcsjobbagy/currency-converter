@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Currency Converter | Validated</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
+    <link rel="stylesheet" href="/src/static/css/main.css">
+
+</head>
+<body>
+    <a class="btn btn-primary btn-lg btn-block my-4" href="/src/pages/currencyConverterNonValidated.html">Go to Non-Validated Converter</a>
+
+    <h2>Currency Converter</h2>
+    <h5>Validated input fields</h5>
+
+    <div class="d-flex flex-column text-center align-items-center my-3 mx-auto">
+
+        <form id="currencyConverterForm" class="d-flex flex-column w-50 h-50
+        text-center align-items-center justify-content-evenly">
+            <label for="amount">Amount:</label>
+            <input type="number" step="0.01" id="amount" name="amount" value=0 required>
+            
+            <label for="fromCurrency">From Currency:</label>
+            <select id="fromCurrency" name="fromCurrency" required>
+                <option value="USD" selected>USD</option>
+                <option value="EUR">EUR</option>
+                <option value="HUF">HUF</option>
+                <option value="GBP">GBP</option>
+            </select>
+            
+            <label for="toCurrency">To Currency:</label>
+            <select id="toCurrency" name="toCurrency" required>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="HUF" selected>HUF</option>
+                <option value="GBP">GBP</option>
+            </select>
+
+            <label for="toCurrency">Date:</label>
+            <input type="date" id="currentDate" name="currentDate" value="" required>
+
+            <button class="btn btn-primary btn-lg btn-block my-3 w-60 h-50" type="submit">Convert</button>
+        </form>
+    </div>
+
+    <div id="result"></div>
+
+    <script type="module" src="/dist/currencyConverterMain.js"></script>
+</body>
+</html>
