@@ -1,6 +1,5 @@
 import { IExchangeRateService } from "./exchangeRateService.js"
 import { ValidationError } from "./errors/validationError.js"
-import { NetworkError } from "./errors/networkError.js"
 import { NotFoundError } from "./errors/notFoundError.js"
 import { validCurrencies } from "./configData.js"
 
@@ -24,14 +23,9 @@ export class CurrencyConverter {
 		toCurrency = toCurrency.toUpperCase()
 
 		const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency, currentDate)
-		this.validateExchangeRate(exchangeRate)
+		const exchangeRateNumeric = this.validateExchangeRate(exchangeRate)
 
-		if (typeof exchangeRate == "number") {
-			const convertedAmount = amount * exchangeRate
-			return Number(convertedAmount.toFixed(2))
-		} else {
-			throw new ValidationError("Invalid EXCHANGE RATE returned.")
-		}
+		return this.calculateConvertedAmount(amount, exchangeRateNumeric)
 	}
 
 	public GenerateConversionReport(
@@ -56,11 +50,9 @@ export class CurrencyConverter {
 		while (currentDate <= endDate) {
 			const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency, currentDate)
 
-			this.validateExchangeRate(exchangeRate)
+			const exchangeRateNumeric = this.validateExchangeRate(exchangeRate)
 
-			if (typeof exchangeRate == "number") {
-				this.calculateConversion(exchangeRate, conversions, currentDate)
-			}
+			this.calculateConversion(exchangeRateNumeric, conversions, currentDate)
 		}
 
 		return `Conversion Report:\n${conversions.join("\n")}`
@@ -78,14 +70,9 @@ export class CurrencyConverter {
 		currentDate.setDate(currentDate.getDate() + 1)
 	}
 
-	private validateExchangeRate(exchangeRate: any) {
+	private validateExchangeRate(exchangeRate: any): number {
 		if (exchangeRate == "") {
 			const error = new NotFoundError("EXCHANGE RATE not found.")
-			throw error
-		}
-
-		if (!exchangeRate) {
-			const error = new NetworkError("Unable to fetch EXCHANGE RATE.")
 			throw error
 		}
 
@@ -93,6 +80,13 @@ export class CurrencyConverter {
 			const error = new ValidationError("Invalid EXCHANGE RATE returned.")
 			throw error
 		}
+
+		return Number(exchangeRate)
+	}
+
+	private calculateConvertedAmount(amount: number, exchangeRate: number): number {
+		const convertedAmount = amount * exchangeRate
+		return Number(convertedAmount.toFixed(2))
 	}
 
 	private validateAmount(amount: number) {

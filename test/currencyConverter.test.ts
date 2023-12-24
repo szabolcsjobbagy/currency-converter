@@ -215,21 +215,14 @@ describe("CurrencyConverter class", () => {
 				// Arrange --------------------------------------------------
 				const error = new ValidationError(errorMsg)
 
-				// Whenever the dependency method is called during this test,
-				// it will throw an exception
-				mockedFn.mockImplementation(() => {
-					throw error
-				})
+				// If the MOCKED dependency method is called with the dummy INPUT values,
+				// set the return value to the dummy OUTPUT value
+				mockedFn
+					.calledWith(input.fromCurrency, input.toCurrency, input.currentDate)
+					.mockReturnValue("invalid rate")
 
 				// Act & Assert ----------------------------------------------------
 
-				expect(() =>
-					mockedExchangeRateService.getExchangeRate(
-						input.fromCurrency,
-						input.toCurrency,
-						input.currentDate
-					)
-				).toThrow(error)
 				expect(() =>
 					currencyConverter.Convert(
 						input.amount,
@@ -240,7 +233,7 @@ describe("CurrencyConverter class", () => {
 				).toThrow(error)
 
 				// Check if the mocked method was called needed number of times, with the dummy Input values
-				expect(mockedFn).toHaveBeenCalledTimes(2)
+				expect(mockedFn).toHaveBeenCalledTimes(1)
 				expect(mockedFn).toHaveBeenCalledWith(
 					input.fromCurrency,
 					input.toCurrency,
@@ -254,21 +247,14 @@ describe("CurrencyConverter class", () => {
 				// Arrange --------------------------------------------------
 				const error = new NotFoundError(errorMsg)
 
-				// Whenever the dependency method is called during this test,
-				// it will throw an exception
-				mockedFn.mockImplementation(() => {
-					throw error
-				})
+				// If the MOCKED dependency method is called with the dummy INPUT values,
+				// set the return value to the dummy OUTPUT value
+				mockedFn
+					.calledWith(input.fromCurrency, input.toCurrency, input.currentDate)
+					.mockReturnValue("")
 
 				// Act & Assert ----------------------------------------------------
 
-				expect(() =>
-					mockedExchangeRateService.getExchangeRate(
-						input.fromCurrency,
-						input.toCurrency,
-						input.currentDate
-					)
-				).toThrow(error)
 				expect(() =>
 					currencyConverter.Convert(
 						input.amount,
@@ -279,7 +265,7 @@ describe("CurrencyConverter class", () => {
 				).toThrow(error)
 
 				// Check if the mocked method was called needed number of times, with the dummy Input values
-				expect(mockedFn).toHaveBeenCalledTimes(2)
+				expect(mockedFn).toHaveBeenCalledTimes(1)
 				expect(mockedFn).toHaveBeenCalledWith(
 					input.fromCurrency,
 					input.toCurrency,
@@ -298,8 +284,8 @@ describe("CurrencyConverter class", () => {
 				// Arrange --------------------------------------------------
 				const error = new NetworkError(errorMsg)
 
-				// Whenever the dependency method is called during this test,
-				// it will throw an exception
+				// If the MOCKED dependency method is not accessible,
+				// throw an error
 				mockedFn.mockImplementation(() => {
 					throw error
 				})
@@ -527,9 +513,7 @@ describe("CurrencyConverter class", () => {
 				mockedFn
 					.mockReturnValueOnce(381.32)
 					.mockReturnValueOnce(383.07)
-					.mockImplementation(() => {
-						throw error
-					})
+					.mockReturnValueOnce("invalid rate")
 
 				// Act & Assert ----------------------------------------------------
 
@@ -556,9 +540,7 @@ describe("CurrencyConverter class", () => {
 				mockedFn
 					.mockReturnValueOnce(350.03)
 					.mockReturnValueOnce(352.12)
-					.mockImplementation(() => {
-						throw error
-					})
+					.mockReturnValueOnce("")
 
 				// Act & Assert ----------------------------------------------------
 
@@ -586,9 +568,9 @@ describe("CurrencyConverter class", () => {
 				// Arrange --------------------------------------------------
 				const error = new NetworkError(errorMsg)
 
-				// Whenever the dependency method is called during this test,
-				// it will throw an exception
-				mockedFn.mockImplementation(() => {
+				// If the MOCKED dependency method is not accessible,
+				// throw an error
+				mockedFn.mockImplementationOnce(() => {
 					throw error
 				})
 
