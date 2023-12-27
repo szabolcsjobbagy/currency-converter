@@ -1,7 +1,6 @@
 import { ValidationError } from "./errors/validationError.js";
-import { NetworkError } from "./errors/networkError.js";
 import { NotFoundError } from "./errors/notFoundError.js";
-import { validCurrencies } from "./configData.js";
+import { inputNames, validCurrencies } from "./configData.js";
 export class CurrencyConverter {
     constructor(exchangeRateService) {
         this.exchangeRateService = exchangeRateService;
@@ -9,41 +8,39 @@ export class CurrencyConverter {
     }
     Convert(amount, fromCurrency, toCurrency, currentDate) {
         this.validateAmount(amount);
-        this.validateCurrency(fromCurrency, "FROM CURRENCY");
-        this.validateCurrency(toCurrency, "TO CURRENCY");
-        this.validateCurrencySame(fromCurrency, toCurrency);
-        this.validateDate(currentDate, "DATE");
-        fromCurrency = fromCurrency.toUpperCase();
-        toCurrency = toCurrency.toUpperCase();
+        this.validateCurrencies(fromCurrency, toCurrency);
+        this.validateDates(currentDate);
         const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency, currentDate);
-        this.validateExchangeRate(exchangeRate);
-        if (typeof exchangeRate == "number") {
-            const convertedAmount = amount * exchangeRate;
-            return Number(convertedAmount.toFixed(2));
-        }
-        else {
-            throw new ValidationError("Invalid EXCHANGE RATE returned.");
-        }
+        const exchangeRateNumeric = this.validateExchangeRate(exchangeRate);
+        return this.calculateConvertedAmount(amount, exchangeRateNumeric);
     }
     GenerateConversionReport(fromCurrency, toCurrency, startDate, endDate) {
         const conversions = [];
         const currentDate = new Date(startDate);
-        this.validateCurrency(fromCurrency, "FROM CURRENCY");
-        this.validateCurrency(toCurrency, "TO CURRENCY");
-        this.validateCurrencySame(fromCurrency, toCurrency);
-        this.validateDate(startDate, "START DATE");
-        this.validateDate(endDate, "END DATE");
-        this.validateDateRange(startDate, endDate);
-        fromCurrency = fromCurrency.toUpperCase();
-        toCurrency = toCurrency.toUpperCase();
+        this.validateCurrencies(fromCurrency, toCurrency);
+        this.validateDates(startDate, endDate);
         while (currentDate <= endDate) {
             const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency, currentDate);
-            this.validateExchangeRate(exchangeRate);
-            if (typeof exchangeRate == "number") {
-                this.calculateConversion(exchangeRate, conversions, currentDate);
-            }
+            const exchangeRateNumeric = this.validateExchangeRate(exchangeRate);
+            this.calculateConversion(exchangeRateNumeric, conversions, currentDate);
         }
         return `Conversion Report:\n${conversions.join("\n")}`;
+    }
+    validateCurrencies(fromCurrency, toCurrency) {
+        this.validateCurrency(fromCurrency, inputNames.fromCurrency);
+        this.validateCurrency(toCurrency, inputNames.toCurrency);
+        this.validateCurrencySame(fromCurrency, toCurrency);
+        fromCurrency = fromCurrency.toUpperCase();
+        toCurrency = toCurrency.toUpperCase();
+    }
+    validateDates(startDate, endDate) {
+        if (!endDate) {
+            this.validateDate(startDate, inputNames.currentDate);
+            return;
+        }
+        this.validateDate(startDate, inputNames.startDate);
+        this.validateDate(endDate, inputNames.endDate);
+        this.validateDateRange(startDate, endDate);
     }
     getExchangeRate(fromCurrency, toCurrency, currentDate) {
         return this.exchangeRateService.getExchangeRate(fromCurrency, toCurrency, currentDate);
@@ -59,38 +56,41 @@ export class CurrencyConverter {
             const error = new NotFoundError("EXCHANGE RATE not found.");
             throw error;
         }
-        if (!exchangeRate) {
-            const error = new NetworkError("Unable to fetch EXCHANGE RATE.");
-            throw error;
-        }
         if (isNaN(exchangeRate)) {
             const error = new ValidationError("Invalid EXCHANGE RATE returned.");
             throw error;
         }
+        return Number(exchangeRate);
+    }
+    calculateConvertedAmount(amount, exchangeRate) {
+        const convertedAmount = amount * exchangeRate;
+        return Number(convertedAmount.toFixed(2));
     }
     validateAmount(amount) {
         if (isNaN(amount)) {
-            throw new ValidationError("Invalid AMOUNT input.");
+            throw new ValidationError(`Invalid ${inputNames.amount} input.`);
         }
     }
-    validateCurrency(currency, currencyName) {
-        if (!validCurrencies.includes(currency.toUpperCase())) {
-            throw new ValidationError(`Invalid ${currencyName} input.`);
+    validateCurrency(currency, name) {
+        const notValidCurrency = !validCurrencies.includes(currency.toUpperCase());
+        if (notValidCurrency) {
+            throw new ValidationError(`Invalid ${name} input.`);
         }
     }
     validateCurrencySame(fromCurrency, toCurrency) {
-        if (fromCurrency.toUpperCase() === toCurrency.toUpperCase()) {
-            throw new ValidationError("FROM and TO CURRENCIES must be different.");
+        const currenciesAreSame = fromCurrency.toUpperCase() === toCurrency.toUpperCase();
+        if (currenciesAreSame) {
+            throw new ValidationError(`${inputNames.fromCurrency} and ${inputNames.toCurrency} must be different.`);
         }
     }
-    validateDate(date, dateName) {
+    validateDate(date, name) {
         if (!(date instanceof Date) || isNaN(date.getTime())) {
-            throw new ValidationError(`Invalid ${dateName} input.`);
+            throw new ValidationError(`Invalid ${name} input.`);
         }
     }
     validateDateRange(startDate, endDate) {
         if (endDate < startDate) {
-            throw new ValidationError("END DATE must be greater than or equal to START DATE.");
+            throw new ValidationError(`${inputNames.endDate} must be greater than or equal to ${inputNames.startDate}.`);
         }
     }
 }

@@ -1,6 +1,6 @@
-export class IExchangeRateService {
+export class ExchangeRateService {
     getExchangeRate(fromCurrency, toCurrency, currentDate = new Date()) {
-        const dateString = currentDate.toISOString().split("T")[0];
+        const dateString = this.convertDateToString(currentDate);
         const conversionData = [
             {
                 date: "2023-12-01",
@@ -47,24 +47,32 @@ export class IExchangeRateService {
         ];
         // For 2023-12-04, for EUR the exchange rate is invalid, for USD it is missing
         // to help testing the error handling
-        const conversionDataItem = conversionData.find((item) => item.fromCurrency === fromCurrency &&
-            item.toCurrency === toCurrency &&
-            item.date === dateString);
+        const conversionDataItem = this.findMatchingItem(conversionData, fromCurrency, toCurrency, dateString);
         if (conversionDataItem) {
-            const result = conversionDataItem.rate;
-            return result;
+            return conversionDataItem.rate;
         }
         else {
-            const conversionDataItem = conversionData.find((item) => item.fromCurrency === toCurrency &&
-                item.toCurrency === fromCurrency &&
-                item.date === dateString);
-            if (conversionDataItem && typeof conversionDataItem.rate === "number") {
-                const result = 1 / conversionDataItem.rate;
-                return result;
-            }
-            else {
-                return "";
-            }
+            const conversionDataItem = this.findMatchingItem(conversionData, toCurrency, fromCurrency, dateString);
+            return this.getExchangeRateFromItem(conversionDataItem);
         }
+    }
+    getExchangeRateFromItem(item) {
+        const exchangeRateIsNumber = item && typeof item.rate === "number";
+        let result;
+        if (exchangeRateIsNumber) {
+            result = 1 / Number(item.rate);
+        }
+        else {
+            result = "";
+        }
+        return result;
+    }
+    findMatchingItem(conversionData, fromCurrency, toCurrency, dateString) {
+        return conversionData.find((item) => item.fromCurrency === fromCurrency &&
+            item.toCurrency === toCurrency &&
+            item.date === dateString);
+    }
+    convertDateToString(currentDate) {
+        return currentDate.toISOString().split("T")[0];
     }
 }

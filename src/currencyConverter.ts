@@ -1,11 +1,11 @@
-import { IExchangeRateService } from "./exchangeRateService.js"
+import { ExchangeRateService } from "./exchangeRateService.js"
 import { ValidationError } from "./errors/validationError.js"
 import { NotFoundError } from "./errors/notFoundError.js"
-import { validCurrencies } from "./configData.js"
+import { inputNames, validCurrencies } from "./configData.js"
 
 export class CurrencyConverter {
 	private readonly FIXED_AMOUNT = 100
-	constructor(private exchangeRateService: IExchangeRateService) {}
+	constructor(private exchangeRateService: ExchangeRateService) {}
 
 	public Convert(
 		amount: number,
@@ -14,13 +14,8 @@ export class CurrencyConverter {
 		currentDate: Date
 	): number {
 		this.validateAmount(amount)
-		this.validateCurrency(fromCurrency, "FROM CURRENCY")
-		this.validateCurrency(toCurrency, "TO CURRENCY")
-		this.validateCurrencySame(fromCurrency, toCurrency)
-		this.validateDate(currentDate, "DATE")
-
-		fromCurrency = fromCurrency.toUpperCase()
-		toCurrency = toCurrency.toUpperCase()
+		this.validateCurrencies(fromCurrency, toCurrency)
+		this.validateDates(currentDate)
 
 		const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency, currentDate)
 		const exchangeRateNumeric = this.validateExchangeRate(exchangeRate)
@@ -37,15 +32,8 @@ export class CurrencyConverter {
 		const conversions: number[] = []
 		const currentDate = new Date(startDate)
 
-		this.validateCurrency(fromCurrency, "FROM CURRENCY")
-		this.validateCurrency(toCurrency, "TO CURRENCY")
-		this.validateCurrencySame(fromCurrency, toCurrency)
-		this.validateDate(startDate, "START DATE")
-		this.validateDate(endDate, "END DATE")
-		this.validateDateRange(startDate, endDate)
-
-		fromCurrency = fromCurrency.toUpperCase()
-		toCurrency = toCurrency.toUpperCase()
+		this.validateCurrencies(fromCurrency, toCurrency)
+		this.validateDates(startDate, endDate)
 
 		while (currentDate <= endDate) {
 			const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency, currentDate)
@@ -56,6 +44,26 @@ export class CurrencyConverter {
 		}
 
 		return `Conversion Report:\n${conversions.join("\n")}`
+	}
+
+	private validateCurrencies(fromCurrency: string, toCurrency: string) {
+		this.validateCurrency(fromCurrency, inputNames.fromCurrency)
+		this.validateCurrency(toCurrency, inputNames.toCurrency)
+		this.validateCurrencySame(fromCurrency, toCurrency)
+
+		fromCurrency = fromCurrency.toUpperCase()
+		toCurrency = toCurrency.toUpperCase()
+	}
+
+	private validateDates(startDate: Date, endDate?: Date) {
+		if (!endDate) {
+			this.validateDate(startDate, inputNames.currentDate)
+			return
+		}
+
+		this.validateDate(startDate, inputNames.startDate)
+		this.validateDate(endDate, inputNames.endDate)
+		this.validateDateRange(startDate, endDate)
 	}
 
 	private getExchangeRate(fromCurrency: string, toCurrency: string, currentDate: Date) {
@@ -91,31 +99,38 @@ export class CurrencyConverter {
 
 	private validateAmount(amount: number) {
 		if (isNaN(amount)) {
-			throw new ValidationError("Invalid AMOUNT input.")
+			throw new ValidationError(`Invalid ${inputNames.amount} input.`)
 		}
 	}
 
-	private validateCurrency(currency: string, currencyName: string) {
-		if (!validCurrencies.includes(currency.toUpperCase())) {
-			throw new ValidationError(`Invalid ${currencyName} input.`)
+	private validateCurrency(currency: string, name: string) {
+		const notValidCurrency = !validCurrencies.includes(currency.toUpperCase())
+
+		if (notValidCurrency) {
+			throw new ValidationError(`Invalid ${name} input.`)
 		}
 	}
 
 	private validateCurrencySame(fromCurrency: string, toCurrency: string) {
-		if (fromCurrency.toUpperCase() === toCurrency.toUpperCase()) {
-			throw new ValidationError("FROM and TO CURRENCIES must be different.")
+		const currenciesAreSame = fromCurrency.toUpperCase() === toCurrency.toUpperCase()
+		if (currenciesAreSame) {
+			throw new ValidationError(
+				`${inputNames.fromCurrency} and ${inputNames.toCurrency} must be different.`
+			)
 		}
 	}
 
-	private validateDate(date: Date, dateName: string) {
+	private validateDate(date: Date, name: string) {
 		if (!(date instanceof Date) || isNaN(date.getTime())) {
-			throw new ValidationError(`Invalid ${dateName} input.`)
+			throw new ValidationError(`Invalid ${name} input.`)
 		}
 	}
 
 	private validateDateRange(startDate: Date, endDate: Date): void {
 		if (endDate < startDate) {
-			throw new ValidationError("END DATE must be greater than or equal to START DATE.")
+			throw new ValidationError(
+				`${inputNames.endDate} must be greater than or equal to ${inputNames.startDate}.`
+			)
 		}
 	}
 }

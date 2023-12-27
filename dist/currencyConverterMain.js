@@ -1,4 +1,4 @@
-import { IExchangeRateService } from "./exchangeRateService.js";
+import { ExchangeRateService } from "./exchangeRateService.js";
 import { CurrencyConverter } from "./currencyConverter.js";
 import { displayValueInElement } from "./utils/handleElements.js";
 document.getElementById("amount").value = "100.25";
@@ -32,7 +32,7 @@ if (form) {
         else {
             currentDateAsDate = currentDate;
         }
-        const exchangeRateService = new IExchangeRateService();
+        const exchangeRateService = new ExchangeRateService();
         const currencyConverter = new CurrencyConverter(exchangeRateService);
         const convertedAmount = currencyConverter.Convert(amount, fromCurrency, toCurrency, currentDateAsDate);
         displayValueInElement("Converted Amount: " + convertedAmount, "result");

@@ -1,12 +1,13 @@
 import { mock, mockReset } from "jest-mock-extended"
-import { IExchangeRateService } from "../src/exchangeRateService"
+import { ExchangeRateService } from "../src/exchangeRateService"
 import { CurrencyConverter } from "../src/currencyConverter"
 import { ValidationError } from "../src/errors/validationError"
 import { NotFoundError } from "../src/errors/notFoundError"
 import { NetworkError } from "../src/errors/networkError"
+import { inputNames } from "../src/configData.js"
 
 // MOCKING the dependency class and create a new instance of the class
-const mockedExchangeRateService = mock<IExchangeRateService>()
+const mockedExchangeRateService = mock<ExchangeRateService>()
 
 describe("CurrencyConverter class", () => {
 	// SETUP phase --------------------------------------------------------
@@ -168,23 +169,31 @@ describe("CurrencyConverter class", () => {
 
 			// Error paths where Mocked dependency method is NOT called -------
 			it.each([
-				["invalid AMOUNT input was added", invalidInputAmount, "Invalid AMOUNT input."],
 				[
-					"invalid FROM CURRENCY input was added",
+					`invalid ${inputNames.amount} input was added`,
+					invalidInputAmount,
+					`Invalid ${inputNames.amount} input.`,
+				],
+				[
+					`invalid ${inputNames.fromCurrency} input was added`,
 					invalidInputFromCurrency,
-					"Invalid FROM CURRENCY input.",
+					`Invalid ${inputNames.fromCurrency} input.`,
 				],
 				[
-					"invalid TO CURRENCY input was added",
+					`invalid ${inputNames.toCurrency} input was added`,
 					invalidInputToCurrency,
-					"Invalid TO CURRENCY input.",
+					`Invalid ${inputNames.toCurrency} input.`,
 				],
 				[
-					"FROM CURRENCY and TO CURRENCY inputs are the same",
+					`${inputNames.fromCurrency} and ${inputNames.toCurrency} inputs are the same`,
 					invalidInputSameFromAndToCurrency,
-					"FROM and TO CURRENCIES must be different.",
+					`${inputNames.fromCurrency} and ${inputNames.toCurrency} must be different.`,
 				],
-				["invalid DATE input was added", invalidInputDate, "Invalid DATE input."],
+				[
+					`invalid ${inputNames.currentDate} input was added`,
+					invalidInputDate,
+					`Invalid ${inputNames.currentDate} input.`,
+				],
 			])("should throw ValidationError if %s", (caseTitle, input, errorMsg) => {
 				// Arrange --------------------------------------------------
 				const error = new ValidationError(errorMsg)
@@ -450,34 +459,34 @@ describe("CurrencyConverter class", () => {
 			// Error paths where Mocked dependency method is NOT called -------
 			it.each([
 				[
-					"invalid FROM CURRENCY input was added",
+					`invalid ${inputNames.fromCurrency} input was added`,
 					invalidInputFromCurrency,
-					"Invalid FROM CURRENCY input.",
+					`Invalid ${inputNames.fromCurrency} input.`,
 				],
 				[
-					"invalid TO CURRENCY input was added",
+					`invalid ${inputNames.toCurrency} input was added`,
 					invalidInputToCurrency,
-					"Invalid TO CURRENCY input.",
+					`Invalid ${inputNames.toCurrency} input.`,
 				],
 				[
-					"FROM CURRENCY and TO CURRENCY inputs are the same",
+					`${inputNames.fromCurrency} and ${inputNames.toCurrency} inputs are the same`,
 					invalidInputSameFromAndToCurrency,
-					"FROM and TO CURRENCIES must be different.",
+					`${inputNames.fromCurrency} and ${inputNames.toCurrency} must be different.`,
 				],
 				[
-					"invalid START DATE input was added",
+					`invalid ${inputNames.startDate} input was added`,
 					invalidInputStartDate,
-					"Invalid START DATE input.",
+					`Invalid ${inputNames.startDate} input.`,
 				],
 				[
-					"invalid END DATE input was added",
+					`invalid ${inputNames.endDate} input was added`,
 					invalidInputEndDate,
-					"Invalid END DATE input.",
+					`Invalid ${inputNames.endDate} input.`,
 				],
 				[
-					"END DATE is earlier than START DATE",
+					`${inputNames.endDate} is earlier than ${inputNames.startDate}`,
 					invalidDateRange,
-					"END DATE must be greater than or equal to START DATE.",
+					`${inputNames.endDate} must be greater than or equal to ${inputNames.startDate}.`,
 				],
 			])("should throw ValidationError if %s", (caseTitle, input, errorMsg) => {
 				// Arrange --------------------------------------------------
